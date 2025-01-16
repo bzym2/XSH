@@ -3,3 +3,6 @@
 </br>
 
 I'm sure it's not bash. LMAO
+
+### Usage:
+python shell.py
