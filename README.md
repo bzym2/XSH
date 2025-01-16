@@ -2,4 +2,4 @@
 <img align="left" src="https://img.shields.io/badge/Made%20with-Python-purple?style=for-the-badge&logo=python&logoColor=white"><img src="https://img.shields.io/badge/Required-Linux-purple?style=for-the-badge&logo=linux&logoColor=white"><img src="https://img.shields.io/github/commit-activity/t/the-OmegaLabs/YetAnotherSHell?style=for-the-badge&color=purple">
 </br>
 
-yash LOL
+I'm sure it's not bash. LMAO
