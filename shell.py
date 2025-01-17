@@ -23,9 +23,13 @@ def main():
         elif shinput == 'quit' or shinput == 'exit':
             exit()
 
-        elif shinput.startswith('cd '):
+        elif shinput.startswith('cd'):
             try:
-                os.chdir(shinput.split(' ')[-1])
+                path = shinput.split(' ')
+                if len(path) == 1:
+                    os.chdir(os.path.expanduser('~'))
+                else:
+                    os.chdir(path[-1])
             except:
                 print(f'hush: cd: can\'t cd to {shinput.split(" ")[-1]}')
     
