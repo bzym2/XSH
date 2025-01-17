@@ -36,6 +36,20 @@ def processVariable(command: str):
         command = command.replace(f"${i}", registery[i])
     return command
 
+def completer(text, state):
+    commands = os.listdir()
+    if text:
+        matches = [cmd for cmd in commands if cmd.startswith(text)]
+    else:
+        matches = commands
+    try:
+        return matches[state]
+    except IndexError:
+        return None
+
+readline.set_completer(completer)
+readline.parse_and_bind("tab: complete")
+
 def main():
     theme = "bash"
 
