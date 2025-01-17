@@ -6,7 +6,7 @@ import readline # keyboard support
 import subprocess
 import globalvars
 
-print(globalvars.logo)
+print(globalvars.logo_colossal)
 print(globalvars.logo_text)
 
 registery = {}
