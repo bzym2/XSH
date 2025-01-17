@@ -3,8 +3,8 @@
 import os
 import getpass
 import platform
-import readline
-import subprocess # keyboard support
+import readline # keyboard support
+import subprocess 
 
 theme = "bash"
 registery = {}
