@@ -3,15 +3,10 @@ import os
 import getpass
 import platform
 import platform
-import readline # keyboard support
 import subprocess
 import globalvars
 import colorama
-
-if platform.system == 'Windows':
-    path_char = ';'
-else:
-    path_char = ':'
+import shlex
 
 colorama.init()
 
@@ -71,10 +66,18 @@ def completer(text, state):
     except IndexError:
         return None
 
-readline.set_completer(completer)
-readline.parse_and_bind("tab: complete")
+if platform.system() == 'Windows':
+    print('Auto-completion has been disabled because this system is Windows.')
+    path_char = ';'
+else:
+    import readline 
+    path_char = ':'
+    readline.set_completer(completer)
+    readline.parse_and_bind("tab: complete")
 
 def findExecutable(filename):
+    if platform.system() == 'Windows':
+        filename = filename + '.exe'
     for i in registry['PATH'].split(path_char) + [os.getcwd()]:
         if os.path.exists(f'{i}/{filename}'):
             return f'{i}/{filename}'
@@ -122,7 +125,7 @@ def main():
         elif shinput.startswith('_checkfile '):
             print(findExecutable(shinput.split(' ')[1]))
         else:
-            parts = shinput.split(' ')
+            parts = shlex.split(shinput)
             flag = findExecutable(parts[0])
 
             if flag:
@@ -131,7 +134,7 @@ def main():
                 except Exception as f:
                     print(f"hush: {f}")
             else:
-                print("hush: File do not exists, please check your command and try again.")
+                print(f"hush: {parts[0]}: not found")
                 
             # subprocess.run(shinput, env=registery, shell=True)
                 
