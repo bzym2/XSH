@@ -2,13 +2,13 @@
 import os
 import getpass
 import platform
-import sys
+import platform
 import readline # keyboard support
 import subprocess
 import globalvars
 import colorama
 
-if sys.platform.startswith('win'):
+if platform.system == 'Windows':
     path_char = ';'
 else:
     path_char = ':'
