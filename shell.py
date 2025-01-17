@@ -2,10 +2,16 @@
 import os
 import getpass
 import platform
+import sys
 import readline # keyboard support
 import subprocess
 import globalvars
 import colorama
+
+if sys.platform.startswith('win'):
+    path_char = ';'
+else:
+    path_char = ':'
 
 colorama.init()
 
@@ -110,7 +116,7 @@ def main():
         elif shinput.startswith('_checkfile '):
             parts = shinput.split(' ')
             flag = False
-            for i in registery['PATH'].split(':'):
+            for i in registery['PATH'].split(path_char):
                 if os.path.exists(f'{i}/{parts[1]}'):
                     flag = True
                     break
@@ -124,7 +130,7 @@ def main():
         else:
             parts = shinput.split(' ')
             flag = False
-            for i in registery['PATH'].split(':'):
+            for i in registery['PATH'].split(path_char):
                 if os.path.exists(f'{i}/{parts[0]}'):
                     flag = True
                     break
