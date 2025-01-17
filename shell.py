@@ -4,7 +4,8 @@ import os
 import getpass
 import platform
 import readline # keyboard support
-import subprocess 
+import subprocess
+import globalvars
 
 theme = "bash"
 registery = {}
@@ -12,11 +13,13 @@ registery = {}
 registery.update(os.environ) # load system variable
 registery['SHELL'] = '/usr/bin/hush'
 
-print("Welcome to Hush. A sleek, ultra-lightweight, and extensible shell.")
+print(globalvars.logo)
+print(globalvars.logo_text)
 
 def getPrefix(theme: str = ''):
     style = {
-        'bash': f"{getpass.getuser()}@{platform.node()}:{os.getcwd().replace(os.path.expanduser('~'), '~')}# "
+        'bash': f"{getpass.getuser()}@{platform.node()}:{os.getcwd().replace(os.path.expanduser('~'), '~')}# ",
+        'kali': f"┌──({getpass.getuser()}㉿kali)-[~{os.getcwd().replace(os.path.expanduser('~'), '~')}]\n└──$ "
     }
     return style.get(theme, '$ ')
 
