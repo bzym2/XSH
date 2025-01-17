@@ -4,13 +4,10 @@ import getpass
 import platform
 import readline # keyboard support
 import subprocess
-import globalvars
 import colorama
 
 colorama.init()
 
-print(globalvars.logo_colossal)
-print(globalvars.logo_text)
 
 registry = {}
 
