@@ -1,9 +1,16 @@
+#!/bin/python3
+
 import os
 import getpass
 import platform
+import readline
+import subprocess # keyboard support
 
 theme = "bash"
 registery = {}
+
+registery.update(os.environ) # load system variable
+registery['SHELL'] = '/usr/bin/hush'
 
 print("Welcome to Hush. A sleek, ultra-lightweight, and extensible shell.")
 
@@ -13,9 +20,25 @@ def getPrefix(theme: str = ''):
     }
     return style.get(theme, '$ ')
 
+def change_directory(path: str):
+    try:
+        if path == '~':
+            os.chdir(os.path.expanduser('~'))
+        else:
+            os.chdir(path)
+    except FileNotFoundError:
+        print(f"hush: cd: no such file or directory: {path}")
+    except PermissionError:
+        print(f"hush: cd: permission denied: {path}")
+
+def processVariable(command: str):
+    for i in registery:
+        command = command.replace(f"${i}", registery[i])
+    return command
+
 def main():
     while True:
-        shinput = input(getPrefix(theme))
+        shinput = processVariable(input(getPrefix(theme)))
 
         if not shinput:
             pass
@@ -24,30 +47,27 @@ def main():
             exit()
 
         elif shinput.startswith('cd'):
-            try:
-                path = shinput.split(' ')
-                if len(path) == 1:
-                    os.chdir(os.path.expanduser('~'))
-                else:
-                    os.chdir(path[-1])
-            except:
-                print(f'hush: cd: can\'t cd to {shinput.split(" ")[-1]}')
+            if shinput == 'cd':
+                change_directory('~')
+            else:
+                path = shinput.split(' ', 1)[-1]
+                change_directory(path)
+
+        elif shinput == '_listvar':
+            for i in registery:
+                print(f"{i}: {registery[i]}")
     
         elif shinput.startswith('export '):
             parts = shinput.split(' ')
 
-            variable_name = parts[1].split('=')[0]
-            variable_value = parts[1].split('=')[1].strip("'")
-
-            print(f"Name : {variable_name}")
-            print(f"Value: {variable_value}")
-
+            registery[parts[1].split('=')[0]] = parts[1].split('=')[1].strip()
 
         else:
-            os.system(shinput)
+            subprocess.run(shinput, env=registery, shell=True)
 
 
 try:
     main()
-except:
+except Exception as f:
+    print(f)
     exit()
