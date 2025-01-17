@@ -18,7 +18,7 @@ colorama.init()
 print(globalvars.logo_colossal)
 print(globalvars.logo_text)
 
-registery = {}
+registry = {}
 
 style = {}
 
@@ -44,8 +44,8 @@ def change_directory(path: str):
         print(f"hush: cd: permission denied: {path}")
 
 def processVariable(command: str):
-    for i in registery:
-        command = command.replace(f"${i}", registery[i])
+    for i in registry:
+        command = command.replace(f"${i}", registry[i])
     return command
 
 def completer(text, state):
@@ -74,11 +74,17 @@ def completer(text, state):
 readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
 
+def findExecutable(filename):
+    for i in registry['PATH'].split(':') + [os.getcwd()]:
+        if os.path.exists(f'{i}/{filename}'):
+            return f'{i}/{filename}'
+    return False
+
 def main():
     theme = "bash"
 
-    registery.update(os.environ) # load system variable
-    registery['SHELL'] = '/usr/bin/hush'
+    registry.update(os.environ) # load system variable
+    registry['SHELL'] = '/usr/bin/hush'
     while True:
         shinput = processVariable(input(getPrefix(theme)))
 
@@ -96,8 +102,8 @@ def main():
                 change_directory(path)
 
         elif shinput == '_listvar':
-            for i in registery:
-                print(f"{i}: {registery[i]}")
+            for i in registry:
+                print(f"{i}: {registry[i]}")
 
         elif shinput.startswith('_theme_set'):
             theme = shinput.split(' ')[-1]
@@ -112,32 +118,18 @@ def main():
         elif shinput.startswith('export '):
             parts = shinput.split(' ')
 
-            registery[parts[1].split('=')[0]] = parts[1].split('=')[1].strip()
+            registry[parts[1].split('=')[0]] = parts[1].split('=')[1].strip()
         elif shinput.startswith('_checkfile '):
-            parts = shinput.split(' ')
-            flag = False
-            for i in registery['PATH'].split(path_char):
-                if os.path.exists(f'{i}/{parts[1]}'):
-                    flag = True
-                    break
-            if os.path.exists(f"{os.getcwd()}/{parts[1]}"):
-                flag = True
-            if flag:
-                print("exist")
-            else:
-                print("non")
-            
+            print(findExecutable(shinput.split(' ')[1]))
         else:
             parts = shinput.split(' ')
-            flag = False
-            for i in registery['PATH'].split(path_char):
-                if os.path.exists(f'{i}/{parts[0]}'):
-                    flag = True
-                    break
-            if os.path.exists(f"{os.getcwd()}/{parts[0]}"):
-                flag = True
+            flag = findExecutable(parts[0])
+
             if flag:
-                subprocess.run(parts, env=registery, shell=False)
+                try:
+                    subprocess.run(parts, env=registry, shell=False)
+                except Exception as f:
+                    print(f"hush: {f}")
             else:
                 print("hush: File do not exists, please check your command and try again.")
                 
