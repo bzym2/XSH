@@ -14,7 +14,7 @@ registery = {}
 def getPrefix(theme: str = ''):
     style = {
         'bash': f"{getpass.getuser()}@{platform.node()}:{os.getcwd().replace(os.path.expanduser('~'), '~')}# ",
-        'kali': f"┌──({getpass.getuser()}㉿kali)-[~{os.getcwd().replace(os.path.expanduser('~'), '~')}]\n└──$ "
+        'kali': f"┌──({getpass.getuser()}㉿kali)-[{os.getcwd().replace(os.path.expanduser('~'), '~')}]\n└──$ "
     }
     return style.get(theme, '$ ')
 
