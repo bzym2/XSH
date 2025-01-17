@@ -75,7 +75,7 @@ readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
 
 def findExecutable(filename):
-    for i in registry['PATH'].split(':') + [os.getcwd()]:
+    for i in registry['PATH'].split(path_char) + [os.getcwd()]:
         if os.path.exists(f'{i}/{filename}'):
             return f'{i}/{filename}'
     return False
