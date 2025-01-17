@@ -1,5 +1,4 @@
 #!/bin/python3
-
 import os
 import getpass
 import platform
@@ -7,14 +6,10 @@ import readline # keyboard support
 import subprocess
 import globalvars
 
-theme = "bash"
-registery = {}
-
-registery.update(os.environ) # load system variable
-registery['SHELL'] = '/usr/bin/hush'
-
 print(globalvars.logo)
 print(globalvars.logo_text)
+
+registery = {}
 
 def getPrefix(theme: str = ''):
     style = {
@@ -40,6 +35,10 @@ def processVariable(command: str):
     return command
 
 def main():
+    theme = "bash"
+
+    registery.update(os.environ) # load system variable
+    registery['SHELL'] = '/usr/bin/hush'
     while True:
         shinput = processVariable(input(getPrefix(theme)))
 
@@ -59,6 +58,9 @@ def main():
         elif shinput == '_listvar':
             for i in registery:
                 print(f"{i}: {registery[i]}")
+
+        elif shinput.startswith('_themechanger'):
+            theme = shinput.split(' ')[-1]
     
         elif shinput.startswith('export '):
             parts = shinput.split(' ')
@@ -69,8 +71,6 @@ def main():
             subprocess.run(shinput, env=registery, shell=True)
 
 
-try:
-    main()
-except Exception as f:
-    print(f)
-    exit()
+
+main()
+
