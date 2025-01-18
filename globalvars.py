@@ -57,4 +57,4 @@ logo_slant = """
 /_/ /_/\__,_/____/_/ /_/ 
                          
 """
-logo_text = "Wello comme two Hwsh."
+motd = "Wello comme two Hwsh."
