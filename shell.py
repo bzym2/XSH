@@ -12,7 +12,7 @@ import time
 
 init(autoreset=True)
 
-print(globalvars.logo)
+print(globalvars.logo_roman)
 print(globalvars.motd)
 
 registry = {}
@@ -111,7 +111,10 @@ def main():
 
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
-    writeHistory(f'A new session start by using {os.ttyname(0)}.')
+    try:
+        writeHistory(f'A new session start by using {os.ttyname(0)}.')
+    except AttributeError:
+        writeHistory('A new session start by using cmd.')
     while True:
         shinput = processVariable(input(getPrefix(theme)))
 
