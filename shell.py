@@ -4,7 +4,6 @@ from colorama import init, Fore, Style
 import os
 import getpass
 import platform
-import platform
 import subprocess
 import sys
 import globalvars
