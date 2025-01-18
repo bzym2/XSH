@@ -2,7 +2,6 @@
 import os
 import getpass
 import platform
-import platform
 import subprocess
 import globalvars
 import colorama
