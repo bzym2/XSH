@@ -7,13 +7,13 @@ import importlib.util
 pluginFolder = "./extensions"
 ###################
 
-_Loaded = False
-_allFoundFunctions = []
+Loaded = False
+allFoundFunctions = []
 onLoadFunctions = {}
 preHookFunctions = {}
 afterHookFunctions = {}
 getThemeFunctions = {}
-loadPluginCount = 0
+loadedPlugins = []
 themes = {}
 Logs = []
 
@@ -37,13 +37,13 @@ def print(string):
     sys.stdout.write(f'{string}\n')
 
 def Load():
+    global Loaded, allFoundFunctions, onLoadFunctions, preHookFunctions, afterHookFunctions, loadedPlugins
+
     oldPath = os.getcwd()
-    global _Loaded, _allFoundFunctions, onLoadFunctions, preHookFunctions, afterHookFunctions, loadPluginCount
     os.chdir(pluginFolder)
 
     for file in os.listdir():
         if file.endswith('.py') and not file.startswith('_'):
-            loadPluginCount += 1
             moduleName = file[:-3]
             spec = importlib.util.spec_from_file_location(moduleName, file)
             module = importlib.util.module_from_spec(spec)
@@ -54,7 +54,7 @@ def Load():
                 continue
             for funcName in dir(module):
                 if callable(getattr(module, funcName)) and not funcName.startswith("__"):
-                    _allFoundFunctions.append(f"{moduleName}.{funcName}")
+                    allFoundFunctions.append(f"{moduleName}.{funcName}")
                 if funcName == 'onLoad':
                     onLoadFunctions[moduleName] = getattr(module, funcName)
                 if funcName == 'preHook':
@@ -64,12 +64,14 @@ def Load():
                 if funcName == 'getStyles':
                     getThemeFunctions[moduleName] = getattr(module, funcName)
 
+            loadedPlugins.append(moduleName)
+
     themeRefresh()
     os.chdir(oldPath)
-    _Loaded = True
+    Loaded = True
 
-    if loadPluginCount != 0:
-        print(f'[hushExtLoader] Loaded {loadPluginCount} plugins, {len(themes)} styles, {len(_allFoundFunctions)} functions.')
+    if len(loadedPlugins) != 0:
+        print(f'[hushExtLoader] Loaded {len(loadedPlugins)} plugins, {len(themes)} styles, {len(allFoundFunctions)} functions.')
     
 def runPluginInit():
     try:
