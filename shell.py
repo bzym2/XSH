@@ -8,14 +8,7 @@ import sys
 import personalize
 import shlex
 import time
-import importlib
-
-for i in os.listdir("./extensions/shell"):
-    if i.endswith(".py"):
-        module_name = f"extensions.shell.{i[:-3]}"
-        module = importlib.import_module(module_name)
-        if hasattr(module, 'onLoad'):
-            module.onLoad()
+import extLoader
 
 registry = {}
 startTime = int(time.time())
@@ -99,8 +92,10 @@ def main():
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
     
-    for function in personalize.startupFunctions:
-        function()
+    for function in personalize.startupFunctions: function()
+    for function in extLoader.pluginsLoad(): function()
+
+    print(f'[extLoader] {extLoader._loadCount} plugins are loaded.')
 
     try:
         writeHistory(f'A new session start by using {os.ttyname(0)}.')
