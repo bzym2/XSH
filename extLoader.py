@@ -16,6 +16,7 @@ themes = {}
 
 
 def pluginLoad():
+    oldPath = os.getcwd()
     global _Loaded, _allFoundFunctions, onLoadFunctions, preHookFunctions, afterHookFunctions, loadPluginCount
     os.chdir(pluginFolder)
 
@@ -37,7 +38,9 @@ def pluginLoad():
                 if func_name == 'getStyles':
                     getThemeFunctions.append(getattr(module, func_name))
     
+    os.chdir(oldPath)
     _Loaded = True
+    
 
 def themeRefresh():
     global themes, getThemeFunctions

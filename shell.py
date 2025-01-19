@@ -1,6 +1,5 @@
 #!/bin/python3
 
-from colorama import init, Fore, Style
 import os
 import platform
 import subprocess
@@ -13,11 +12,13 @@ registry = {}
 style = {}
 startTime = int(time.time())
 themeSet = 'colored_bash'
+homePath = os.path.expanduser('~')
+#homePath = '.'
 
 def change_directory(path: str):
     try:
         if path == '~':
-            os.chdir(os.path.expanduser('~'))
+            os.chdir(homePath)
         else:
             os.chdir(path)
     except FileNotFoundError:
@@ -58,7 +59,7 @@ def completer(text, state):
 
 
 def writeHistory(string):
-    with open(f"{os.path.expanduser('~')}/.hush_history", 'a+') as f:
+    with open(f"{homePath}/.hush_history", 'a+') as f:
         f.write(f'Session [{startTime}] at {time.ctime()}: {string}\n')
 
 

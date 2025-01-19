@@ -80,7 +80,6 @@ motd = "Welcome to Hush."
 theme = 'colored_bash'
 
 def onLoad():
-    init(autoreset=True)
     print(logo)
     print(motd)
 
