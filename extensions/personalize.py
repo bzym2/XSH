@@ -1,4 +1,4 @@
-logo_default = """
+splash_default = """
   _   _           _     
  | | | |_   _ ___| |__  
  | |_| | | | / __| '_ \ 
@@ -6,7 +6,7 @@ logo_default = """
  |_| |_|\__,_|___/_| |_|
                         
 """
-logo_big = """
+splash_big = """
   _    _           _     
  | |  | |         | |    
  | |__| |_   _ ___| |__  
@@ -15,7 +15,7 @@ logo_big = """
  |_|  |_|\__,_|___/_| |_|
                          
 """
-logo_roman = """
+splash_roman = """
 
 ooooo   ooooo                      oooo        
 `888'   `888'                      `888        
@@ -26,7 +26,7 @@ ooooo   ooooo                      oooo
 o888o   o888o  `V88V"V8P' 8""888P' o888o o888o 
                                                
 """
-logo_ansi_shadow = """
+splash_ansi_shadow = """
 
 ██╗  ██╗██╗   ██╗███████╗██╗  ██╗
 ██║  ██║██║   ██║██╔════╝██║  ██║
@@ -36,7 +36,7 @@ logo_ansi_shadow = """
 ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
                                  
 """
-logo_colossal = """
+splash_colossal = """
 
 888    888                   888      
 888    888                   888      
@@ -48,11 +48,10 @@ logo_colossal = """
 888    888  "Y88888  88888P' 888  888 
                                       
 """
-logo_slant = """
-
+splash_slant = """
     ___  __           __  
    // / / /_  ______// /_ 
-  // /_/ / / / / ___/ __ \
+  // /_/ / / / / ___/ __ \ 
  // __  / /_/ (__  / / / /
 //_/ /_/\__,_/____/_/ /_/
                          
@@ -75,12 +74,12 @@ def getStyles():
     return theme
 
 
-logo = logo_slant
-motd = "Welcome to Hush."
+splash = splash_slant
+motd = "Welcome to Hush. A sleek, ultra-lightweight, and extensible shell."
 theme = 'colored_bash'
 
 def onLoad():
-    print(logo)
+    print(splash)
     print(motd)
 
 def preHook():
