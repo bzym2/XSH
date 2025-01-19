@@ -1,4 +1,4 @@
-logo = """
+logo_default = """
   _   _           _     
  | | | |_   _ ___| |__  
  | |_| | | | / __| '_ \ 
@@ -57,4 +57,36 @@ logo_slant = """
 /_/ /_/\__,_/____/_/ /_/ 
                          
 """
-motd = "Wello comme two Hwsh."
+
+import getpass
+import os
+import platform
+from colorama import Fore, Style, init
+
+def _getTheme(themeSet):
+    global theme
+    theme = {
+        'bash': f"{getpass.getuser()}@{platform.node()}:{os.getcwd().replace(os.path.expanduser('~'), '~')}# ",
+        'colored_bash': f"{Style.BRIGHT}{Fore.GREEN}{getpass.getuser()}@{platform.node()}{Fore.BLUE}:{os.getcwd().replace(os.path.expanduser('~'), '~')}{Style.RESET_ALL}$ ",
+        'fish': f"{Fore.LIGHTGREEN_EX}{getpass.getuser()}{Style.RESET_ALL}@{platform.node()} {Fore.RED}{os.getcwd().replace(os.path.expanduser('~'), '~')}{Style.RESET_ALL}# ",
+        'kali': f"{Fore.BLUE}┌──({getpass.getuser()}㉿{Fore.RED}kali{Fore.BLUE})-[{os.getcwd().replace(os.path.expanduser('~'), '~')}]\n└──{Fore.RESET}$ ",
+        'hush': f"╭─[{getpass.getuser()} on Hush]\n╰─{os.getcwd().replace(os.path.expanduser('~'), '~')}> ",
+        'omega': f"╭──(ø@{getpass.getuser()})\n╰──{os.getcwd().replace(os.path.expanduser('~'), '~')}> "
+    }
+    return theme.get(themeSet)
+
+
+logo = logo_default
+motd = "Welcome to Hush."
+theme = 'colored_bash'
+
+def initColorDisplay():
+    init(autoreset=True)
+
+def welcome():
+    print(logo)
+    print(motd)
+
+startupFunctions = [initColorDisplay, welcome]
+preHookFunctions = []
+afterHookFunctions = []

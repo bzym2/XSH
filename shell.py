@@ -2,37 +2,16 @@
 
 from colorama import init, Fore, Style
 import os
-import getpass
 import platform
 import subprocess
 import sys
-import globalvars
+import personalize
 import shlex
 import time
 
-init(autoreset=True)
-
-print(globalvars.logo_roman)
-print(globalvars.motd)
-
 registry = {}
-style = {}
 startTime = int(time.time())
-theme = "colored_bash"
-
-
-def getPrefix(theme: str = ''):
-    global style
-    style = {
-        'bash': f"{getpass.getuser()}@{platform.node()}:{os.getcwd().replace(os.path.expanduser('~'), '~')}# ",
-        'colored_bash': f"{Style.BRIGHT}{Fore.GREEN}{getpass.getuser()}@{platform.node()}{Fore.BLUE}:{os.getcwd().replace(os.path.expanduser('~'), '~')}{Style.RESET_ALL}$ ",
-        'fish': f"{Fore.LIGHTGREEN_EX}{getpass.getuser()}{Style.RESET_ALL}@{platform.node()} {Fore.RED}{os.getcwd().replace(os.path.expanduser('~'), '~')}{Style.RESET_ALL}# ",
-        'kali': f"{Fore.BLUE}┌──({getpass.getuser()}㉿{Fore.RED}kali{Fore.BLUE})-[{os.getcwd().replace(os.path.expanduser('~'), '~')}]\n└──{Fore.RESET}$ ",
-        'hush': f"╭─[{getpass.getuser()} on Hush]\n╰─{os.getcwd().replace(os.path.expanduser('~'), '~')}> ",
-        'omega': f"╭──(ø@{getpass.getuser()})\n╰──{os.getcwd().replace(os.path.expanduser('~'), '~')}> "
-    }
-    return style.get(theme, '$ ')
-
+themeSet = personalize.theme
 
 def change_directory(path: str):
     try:
@@ -107,16 +86,28 @@ def exit():
 
 
 def main():
-    global style, theme
+    global style, themeSet
 
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
+    
+    for function in personalize.startupFunctions:
+        function()
+
     try:
         writeHistory(f'A new session start by using {os.ttyname(0)}.')
     except AttributeError:
         writeHistory('A new session start by using cmd.')
     while True:
-        shinput = processVariable(input(getPrefix(theme)))
+        theme = personalize._getTheme(themeSet)
+
+        for function in personalize.preHookFunctions:
+            function()
+        
+        shinput = processVariable(input(theme))
+
+        for function in personalize.afterHookFunctions:
+            function()
 
         if not shinput:
             pass
@@ -136,11 +127,11 @@ def main():
                 print(f"{i}: {registry[i]}")
 
         elif shinput.startswith('_theme_set'):
-            theme = shinput.split(' ')[-1]
+            themeSet = shinput.split(' ')[-1]
 
         elif shinput.startswith('_theme_list'):
             print("List of theme available:")
-            for i in style:
+            for i in personalize.theme:
                 print(f"\nTheme \"{i}\" preview:", end=f'\n{style[i]}\n')
 
             print()
