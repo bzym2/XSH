@@ -98,16 +98,17 @@ def main():
     for function in extLoader.onLoadFunctions: function()
 
     if extLoader.loadPluginCount != 0:
-        print(f'[extLoader] {extLoader.loadPluginCount} plugins are loaded. Found {len(extLoader._allFoundFunctions)} functions in all plugins.')
+        print(f'[extLoader] Loaded {extLoader.loadPluginCount} plugins, {len(extLoader.themes)} styles, {len(extLoader._allFoundFunctions)} functions.')
 
     try:
         writeHistory(f'A new session start by using {os.ttyname(0)}.')
     except AttributeError:
         writeHistory('A new session start by using cmd.')
     while True:
-        theme = extLoader.themes[themeSet]
-
         for function in extLoader.preHookFunctions: function()
+
+        extLoader.themeRefresh()
+        theme = extLoader.themes[themeSet]
 
         shinput = processVariable(input(theme))
 
