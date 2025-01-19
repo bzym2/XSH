@@ -1,5 +1,3 @@
-# Enable this plugin by removing the '_' at the start of the filename.
-
 def onLoad():
     _thisFunctionWillNotBeExecutedByExtensionLoader()
 
