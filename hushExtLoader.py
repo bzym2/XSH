@@ -32,7 +32,7 @@ def Dump():
             _globalsFiltered[key] = value
     return _globalsFiltered
 
-def _print(string):
+def print(string):
     Logs.append(string)
     sys.stdout.write(f'{string}\n')
 
