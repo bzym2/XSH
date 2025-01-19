@@ -50,11 +50,11 @@ logo_colossal = """
 """
 logo_slant = """
 
-    __  __           __  
-   / / / __  _______/ /_ 
-  / /_/ / / / / ___/ __ \\
- / __  / /_/ (__  / / / /
-/_/ /_/\__,_/____/_/ /_/ 
+    ___  __           __  
+   // / / /_  ______// /_ 
+  // /_/ / / / / ___/ __ \
+ // __  / /_/ (__  / / / /
+//_/ /_/\__,_/____/_/ /_/
                          
 """
 
@@ -75,7 +75,7 @@ def getStyles():
     return theme
 
 
-logo = logo_default
+logo = logo_slant
 motd = "Welcome to Hush."
 theme = 'colored_bash'
 

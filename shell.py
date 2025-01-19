@@ -14,7 +14,7 @@ startTime = int(time.time())
 themeSet = 'personalize.colored_bash'
 homePath = os.path.expanduser('~')
 
-def change_directory(path: str):
+def changeDirectory(path: str):
     global _lastChangedWorkDir
     try:
         if path == '~':
@@ -131,10 +131,10 @@ def main():
 
         elif shinput.startswith('cd'):
             if shinput == 'cd':
-                change_directory('~')
+                changeDirectory('~')
             else:
                 path = shinput.split(' ', 1)[-1]
-                change_directory(path)
+                changeDirectory(path)
 
         elif shinput == '_listvar':
             for i in registry:
