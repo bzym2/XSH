@@ -9,5 +9,11 @@ def preHook():
 def afterHook():
     pass
 
+def getStyles():
+    return {
+        'testStyle_1': '> ',
+        'testStyle_2': '>> ', 
+    }
+
 def _thisFunctionWillNotBeExecutedByExtensionLoader():
     print("Hello, World!")

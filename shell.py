@@ -5,14 +5,14 @@ import os
 import platform
 import subprocess
 import sys
-import personalize
 import shlex
 import time
 import extLoader
 
 registry = {}
+style = {}
 startTime = int(time.time())
-themeSet = personalize.theme
+themeSet = 'colored_bash'
 
 def change_directory(path: str):
     try:
@@ -92,9 +92,9 @@ def main():
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
     
-    for function in personalize.startupFunctions: function()
     
     extLoader.pluginLoad()
+    extLoader.themeRefresh()
     for function in extLoader.onLoadFunctions: function()
 
     if extLoader.loadPluginCount != 0:
@@ -105,14 +105,12 @@ def main():
     except AttributeError:
         writeHistory('A new session start by using cmd.')
     while True:
-        theme = personalize._getTheme(themeSet)
+        theme = extLoader.themes[themeSet]
 
-        for function in personalize.preHookFunctions: function()
         for function in extLoader.preHookFunctions: function()
 
         shinput = processVariable(input(theme))
 
-        for function in personalize.afterHookFunctions: function()
         for function in extLoader.afterHookFunctions: function()
 
         if not shinput:
@@ -137,8 +135,8 @@ def main():
 
         elif shinput.startswith('_theme_list'):
             print("List of theme available:")
-            for i in personalize.theme:
-                print(f"\nTheme \"{i}\" preview:", end=f'\n{style[i]}\n')
+            for i in extLoader.themes:
+                print(f"\nTheme \"{i}\" preview:", end=f'\n{extLoader.themes[i]}\n')
 
             print()
 

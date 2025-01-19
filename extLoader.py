@@ -10,7 +10,9 @@ _allFoundFunctions = []
 onLoadFunctions = []
 preHookFunctions = []
 afterHookFunctions = []
+getThemeFunctions = []
 loadPluginCount = 0
+themes = {}
 
 
 def pluginLoad():
@@ -32,4 +34,15 @@ def pluginLoad():
                     preHookFunctions.append(getattr(module, func_name))
                 if func_name == 'afterHook':
                     afterHookFunctions.append(getattr(module, func_name))
+                if func_name == 'getStyles':
+                    getThemeFunctions.append(getattr(module, func_name))
+    
     _Loaded = True
+
+def themeRefresh():
+    global themes, getThemeFunctions
+
+    themes = {}
+    for function in getThemeFunctions:
+        themes.update(function())
+    

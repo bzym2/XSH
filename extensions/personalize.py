@@ -63,8 +63,7 @@ import os
 import platform
 from colorama import Fore, Style, init
 
-def _getTheme(themeSet):
-    global theme
+def getStyles():
     theme = {
         'bash': f"{getpass.getuser()}@{platform.node()}:{os.getcwd().replace(os.path.expanduser('~'), '~')}# ",
         'colored_bash': f"{Style.BRIGHT}{Fore.GREEN}{getpass.getuser()}@{platform.node()}{Fore.BLUE}:{os.getcwd().replace(os.path.expanduser('~'), '~')}{Style.RESET_ALL}$ ",
@@ -73,21 +72,22 @@ def _getTheme(themeSet):
         'hush': f"╭─[{getpass.getuser()} on Hush]\n╰─{os.getcwd().replace(os.path.expanduser('~'), '~')}> ",
         'omega': f"╭──(ø@{getpass.getuser()})\n╰──{os.getcwd().replace(os.path.expanduser('~'), '~')}> "
     }
-    return theme.get(themeSet)
+    return theme
 
 
 logo = logo_default
 motd = "Welcome to Hush."
 theme = 'colored_bash'
 
-def initColorDisplay():
+def onLoad():
     init(autoreset=True)
-
-def welcome():
     print(logo)
     print(motd)
 
-startupFunctions = [initColorDisplay, welcome]
-preHookFunctions = []
-afterHookFunctions = []
+def preHook():
+    pass
+
+def afterHook():
+    pass
+
 
