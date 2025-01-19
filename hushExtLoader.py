@@ -1,4 +1,6 @@
+import json
 import os
+import sys
 import importlib.util
 
 ###################
@@ -10,10 +12,29 @@ _allFoundFunctions = []
 onLoadFunctions = {}
 preHookFunctions = {}
 afterHookFunctions = {}
-getThemeFunctions = []
+getThemeFunctions = {}
 loadPluginCount = 0
 themes = {}
+Logs = []
 
+def _isSerializable(obj):
+    try:
+        json.dumps(obj)
+        return True
+    except TypeError:
+        return False
+
+def Dump():
+    _globalsFiltered = {}
+            
+    for key, value in globals().items():
+        if _isSerializable(value):
+            _globalsFiltered[key] = value
+    return _globalsFiltered
+
+def _print(string):
+    Logs.append(string)
+    sys.stdout.write(f'{string}\n')
 
 def Load():
     oldPath = os.getcwd()
@@ -29,11 +50,11 @@ def Load():
             try:
                 spec.loader.exec_module(module)
             except Exception as f:
-                print(f'[extLoader] Failed load plugin \"{moduleName}\": {f}.')
+                print(f'[hushExtLoader] Failed load plugin \"{moduleName}\": {f}.')
                 continue
             for funcName in dir(module):
                 if callable(getattr(module, funcName)) and not funcName.startswith("__"):
-                    _allFoundFunctions.append(funcName)
+                    _allFoundFunctions.append(f"{moduleName}.{funcName}")
                 if funcName == 'onLoad':
                     onLoadFunctions[moduleName] = getattr(module, funcName)
                 if funcName == 'preHook':
@@ -41,37 +62,38 @@ def Load():
                 if funcName == 'afterHook':
                     afterHookFunctions[moduleName] = getattr(module, funcName)
                 if funcName == 'getStyles':
-                    getThemeFunctions.append(getattr(module, funcName))
+                    getThemeFunctions[moduleName] = getattr(module, funcName)
 
     themeRefresh()
     os.chdir(oldPath)
     _Loaded = True
 
     if loadPluginCount != 0:
-        print(f'[extLoader] Loaded {loadPluginCount} plugins, {len(themes)} styles, {len(_allFoundFunctions)} functions.')
+        print(f'[hushExtLoader] Loaded {loadPluginCount} plugins, {len(themes)} styles, {len(_allFoundFunctions)} functions.')
     
 def runPluginInit():
     try:
         for function in onLoadFunctions: onLoadFunctions[function]()
     except Exception as f:
-        print(f'[extLoader] Error in running plugin {function}\'s init: {f}')
+        print(f'[hushExtLoader] Error in running plugin {function}\'s init: {f}')
 
 def runPluginPreHook():
     try:
         for function in preHookFunctions: preHookFunctions[function]()
     except Exception as f:
-        print(f'[extLoader] Error in running plugin {function}\'s pre-hook function: {f}')
+        print(f'[hushExtLoader] Error in running plugin {function}\'s pre-hook function: {f}')
 
 def runPluginAfterHook():
     try:
         for function in afterHookFunctions: afterHookFunctions[function]()
     except Exception as f:
-        print(f'[extLoader] Error in running plugin {function}\'s after-hook function: {f}')
+        print(f'[hushExtLoader] Error in running plugin {function}\'s after-hook function: {f}')
 
 def themeRefresh():
     global themes, getThemeFunctions
 
     themes = {}
-    for function in getThemeFunctions:
-        themes.update(function())
-    
+    for moduleName in getThemeFunctions:
+        moduleTheme = getThemeFunctions[moduleName]()
+        for theme in moduleTheme:
+            themes[f'{moduleName}.{theme}'] = moduleTheme[theme]

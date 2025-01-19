@@ -2,3 +2,4 @@
 __pycache__
 .hushrc
 .hush_history
+dump*.json

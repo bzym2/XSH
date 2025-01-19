@@ -1,39 +1,40 @@
 #!/bin/python3
 
+import json
 import os
 import platform
 import subprocess
 import sys
 import shlex
 import time
-import extLoader
+import hushExtLoader
 
 registry = {}
-style = {}
 startTime = int(time.time())
-themeSet = 'colored_bash'
+themeSet = 'personalize.colored_bash'
 homePath = os.path.expanduser('~')
-#homePath = '.'
 
 def change_directory(path: str):
+    global _lastChangedWorkDir
     try:
         if path == '~':
             os.chdir(homePath)
+            _lastChangedWorkDir = homePath
         else:
             os.chdir(path)
+            _lastChangedWorkDir = path
     except FileNotFoundError:
         print(f"hush: cd: no such file or directory: {path}")
     except PermissionError:
         print(f"hush: cd: permission denied: {path}")
-
 
 def processVariable(command: str):
     for i in registry:
         command = command.replace(f"${i}", registry[i])
     return command
 
-
 def completer(text, state):
+    global _lastCompleterList
     commands = os.listdir()
     if text:
         matches = []
@@ -41,13 +42,15 @@ def completer(text, state):
             if cmd.lower().startswith(text.lower()):
                 matches.append(cmd)
 
-        custom_commands = ['_listvar', '_theme_list', '_theme_set',
+        custom_commands = ['_listvar', '_theme_list', '_theme_set', '_dump'
                            'cd', 'exit', 'quit', 'export', '_checkfile']
         for custom_cmd in custom_commands:
             if custom_cmd.lower().startswith(text.lower()):
                 matches.append(custom_cmd)
     else:
         matches = commands
+
+    _lastCompleterList = commands + custom_commands
 
     try:
         if matches:
@@ -59,24 +62,28 @@ def completer(text, state):
 
 
 def writeHistory(string):
+    global hushLog
     with open(f"{homePath}/.hush_history", 'a+') as f:
         f.write(f'Session [{startTime}] at {time.ctime()}: {string}\n')
-
+        hushLog.append(f'Session [{startTime}] at {time.ctime()}: {string}\n')
 
 if platform.system() == 'Windows':
     print('Auto-completion has been disabled because this system is Windows.')
-    path_char = ';'
+    pathChar = ';'
 else:
     import readline
-    path_char = ':'
+    pathChar = ':'
     readline.set_completer(completer)
     readline.parse_and_bind("tab: complete")
 
+_lastChangedWorkDir = ''
+_lastCompleterList = []
+hushLog = []
 
 def findExecutable(filename):
     if platform.system() == 'Windows':
         filename = filename + '.exe'
-    for i in registry['PATH'].split(path_char) + [os.getcwd()]:
+    for i in registry['PATH'].split(pathChar) + [os.getcwd()]:
         if os.path.exists(f'{i}/{filename}'):
             return f'{i}/{filename}'
     return False
@@ -86,29 +93,35 @@ def exit():
     writeHistory('Exiting...')
     sys.exit()
 
+def _isSerializable(obj):
+    try:
+        json.dumps(obj)
+        return True
+    except TypeError:
+        return False
 
 def main():
-    global style, themeSet
+    global themeSet
 
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
     
     
-    extLoader.Load()
-    extLoader.runPluginInit()
+    hushExtLoader.Load()
+    hushExtLoader.runPluginInit()
 
     try:
         writeHistory(f'A new session start by using {os.ttyname(0)}.')
     except AttributeError:
         writeHistory('A new session start by using cmd.')
     while True:
-        extLoader.runPluginPreHook()
-        extLoader.themeRefresh()
-        theme = extLoader.themes.get(themeSet, ' $')
+        hushExtLoader.runPluginPreHook()
+        hushExtLoader.themeRefresh()
+        theme = hushExtLoader.themes.get(themeSet, ' $')
 
         shinput = processVariable(input(theme))
 
-        extLoader.runPluginAfterHook()
+        hushExtLoader.runPluginAfterHook()
 
         if not shinput:
             pass
@@ -132,10 +145,29 @@ def main():
 
         elif shinput.startswith('_theme_list'):
             print("List of theme available:")
-            for i in extLoader.themes:
-                print(f"\nTheme \"{i}\" preview:", end=f'\n{extLoader.themes[i]}\n')
+            for i in hushExtLoader.themes:
+                print(f"\nTheme \"{i}\" preview:", end=f'\n{hushExtLoader.themes[i]}\n')
 
             print()
+
+        elif shinput.startswith('_dump'):
+            nowTime = int(time.time())
+            _globalsFiltered = {}
+            
+            for key, value in globals().items():
+                if _isSerializable(value):
+                    _globalsFiltered[key] = value
+
+            _globalsFiltered['systemType'] = platform.system()
+            _globalsFiltered['systemVersion'] = platform.release()
+            _globalsFiltered['systemArch'] = platform.machine()
+            _globalsFiltered['pythonVersion'] = platform.python_version()
+            _globalsFiltered['hushExtLoaderLog'] = hushExtLoader.Dump()
+            
+            print(f"Dumped to dump_{nowTime}_session{startTime}.json")
+            with open(f"dump_{nowTime}_session{startTime}.json", "w") as f:
+                json.dump(_globalsFiltered, f, indent=4, ensure_ascii=False)
+        
 
         elif shinput.startswith('export '):
             parts = shinput.split(' ')
