@@ -94,26 +94,21 @@ def main():
     registry['SHELL'] = '/usr/bin/hush'
     
     
-    extLoader.pluginLoad()
-    extLoader.themeRefresh()
-    for function in extLoader.onLoadFunctions: function()
-
-    if extLoader.loadPluginCount != 0:
-        print(f'[extLoader] Loaded {extLoader.loadPluginCount} plugins, {len(extLoader.themes)} styles, {len(extLoader._allFoundFunctions)} functions.')
+    extLoader.Load()
+    extLoader.runPluginInit()
 
     try:
         writeHistory(f'A new session start by using {os.ttyname(0)}.')
     except AttributeError:
         writeHistory('A new session start by using cmd.')
     while True:
-        for function in extLoader.preHookFunctions: function()
-
+        extLoader.runPluginPreHook()
         extLoader.themeRefresh()
-        theme = extLoader.themes[themeSet]
+        theme = extLoader.themes.get(themeSet, ' $')
 
         shinput = processVariable(input(theme))
 
-        for function in extLoader.afterHookFunctions: function()
+        extLoader.runPluginAfterHook()
 
         if not shinput:
             pass
