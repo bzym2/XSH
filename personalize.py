@@ -1,3 +1,13 @@
+import os
+import importlib
+
+for i in os.listdir("./extensions/themes"):
+    if i.endswith(".py"):
+        module_name = f"extensions.themes.{i[:-3]}"
+        module = importlib.import_module(module_name)
+        if hasattr(module, 'onLoad'):
+            module.onLoad()
+
 logo_default = """
   _   _           _     
  | | | |_   _ ___| |__  
@@ -90,3 +100,4 @@ def welcome():
 startupFunctions = [initColorDisplay, welcome]
 preHookFunctions = []
 afterHookFunctions = []
+

@@ -8,6 +8,14 @@ import sys
 import personalize
 import shlex
 import time
+import importlib
+
+for i in os.listdir("./extensions/shell"):
+    if i.endswith(".py"):
+        module_name = f"extensions.shell.{i[:-3]}"
+        module = importlib.import_module(module_name)
+        if hasattr(module, 'onLoad'):
+            module.onLoad()
 
 registry = {}
 startTime = int(time.time())
