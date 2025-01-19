@@ -2,26 +2,34 @@ import os
 import importlib.util
 
 ###################
-plugin_folder = "./extensions"
+pluginFolder = "./extensions"
 ###################
 
-_loadCount = 0
+_Loaded = False
+_allFoundFunctions = []
+onLoadFunctions = []
+preHookFunctions = []
+afterHookFunctions = []
+loadPluginCount = 0
 
-def pluginsLoad():
-    global _loadCount
-    os.chdir(plugin_folder)
-    functions = []
+
+def pluginLoad():
+    global _Loaded, _allFoundFunctions, onLoadFunctions, preHookFunctions, afterHookFunctions, loadPluginCount
+    os.chdir(pluginFolder)
 
     for file in os.listdir():
-        if file.endswith('.py'):
+        if file.endswith('.py') and not file.startswith('_'):
+            loadPluginCount += 1
             spec = importlib.util.spec_from_file_location(file[:-3], file)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            if hasattr(module, "onLoad"): 
-                functions.append(module.onLoad)
-                _loadCount += 1
-            else: 
-                print(f"[extLoader] Can't load plugin: {file[:-3]}")
-
-
-    return functions
+            for func_name in dir(module):
+                if callable(getattr(module, func_name)) and not func_name.startswith("__"):
+                    _allFoundFunctions.append(func_name)
+                if func_name == 'onLoad':
+                    onLoadFunctions.append(getattr(module, func_name))
+                if func_name == 'preHook':
+                    preHookFunctions.append(getattr(module, func_name))
+                if func_name == 'afterHook':
+                    afterHookFunctions.append(getattr(module, func_name))
+    _Loaded = True

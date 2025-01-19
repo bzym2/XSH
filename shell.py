@@ -93,9 +93,12 @@ def main():
     registry['SHELL'] = '/usr/bin/hush'
     
     for function in personalize.startupFunctions: function()
-    for function in extLoader.pluginsLoad(): function()
+    
+    extLoader.pluginLoad()
+    for function in extLoader.onLoadFunctions: function()
 
-    print(f'[extLoader] {extLoader._loadCount} plugins are loaded.')
+    if extLoader.loadPluginCount != 0:
+        print(f'[extLoader] {extLoader.loadPluginCount} plugins are loaded. Found {len(extLoader._allFoundFunctions)} functions in all plugins.')
 
     try:
         writeHistory(f'A new session start by using {os.ttyname(0)}.')
@@ -104,13 +107,13 @@ def main():
     while True:
         theme = personalize._getTheme(themeSet)
 
-        for function in personalize.preHookFunctions:
-            function()
-        
+        for function in personalize.preHookFunctions: function()
+        for function in extLoader.preHookFunctions: function()
+
         shinput = processVariable(input(theme))
 
-        for function in personalize.afterHookFunctions:
-            function()
+        for function in personalize.afterHookFunctions: function()
+        for function in extLoader.afterHookFunctions: function()
 
         if not shinput:
             pass
