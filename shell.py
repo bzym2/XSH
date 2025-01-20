@@ -39,19 +39,25 @@ def completer(text, state):
     commands = os.listdir()
     if text:
         matches = []
-        for cmd in commands:
+        for cmd in commands: # local file
             if cmd.lower().startswith(text.lower()):
                 matches.append(cmd)
 
-        custom_commands = ['_listvar', '_theme_list', '_theme_set', '_dump',
+        customCommands = ['_listvar', '_theme_list', '_theme_set', '_dump',
                            'cd', 'exit', 'quit', 'export', '_checkfile']
-        for custom_cmd in custom_commands:
-            if custom_cmd.lower().startswith(text.lower()):
-                matches.append(custom_cmd)
+
+        for customCmd in customCommands:
+            if customCmd.lower().startswith(text.lower()):
+                matches.append(customCmd)
+
+        for pluginCmd in hushExtLoader.registeredCommands:
+            if pluginCmd.lower().startswith(text.lower()):
+                matches.append(pluginCmd)
+
     else:
         matches = commands
 
-    _lastCompleterList = commands + custom_commands
+    _lastCompleterList = commands + customCommands
 
     try:
         if matches:
@@ -107,7 +113,6 @@ def main():
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
     
-    
     hushExtLoader.Load()
     hushExtLoader.runPluginInit()
 
@@ -121,11 +126,17 @@ def main():
         theme = hushExtLoader.themes.get(themeSet, ' $')
 
         shinput = processVariable(input(theme))
-
+        args = shlex.split(shinput)
+    
         hushExtLoader.runPluginAfterHook()
+        pluginCommand = hushExtLoader.registeredCommands.get(args[0], None)
+    
 
         if not shinput:
             pass
+
+        elif not pluginCommand is None:
+            pluginCommand(args)
 
         elif shinput == 'quit' or shinput == 'exit':
             exit()

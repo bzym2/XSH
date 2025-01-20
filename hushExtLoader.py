@@ -12,6 +12,8 @@ allFoundFunctions = []
 onLoadFunctions = {}
 preHookFunctions = {}
 afterHookFunctions = {}
+registerCommandFunctions = {}
+registeredCommands = {}
 getThemeFunctions = {}
 loadedPlugins = []
 themes = {}
@@ -63,15 +65,18 @@ def Load():
                     afterHookFunctions[moduleName] = getattr(module, funcName)
                 if funcName == 'getStyles':
                     getThemeFunctions[moduleName] = getattr(module, funcName)
+                if funcName == 'registerCommands':
+                    registerCommandFunctions[moduleName] = getattr(module, funcName)
 
             loadedPlugins.append(moduleName)
 
     themeRefresh()
+    commandBind()
     os.chdir(oldPath)
     Loaded = True
 
     if len(loadedPlugins) != 0:
-        print(f'[hushExtLoader] Loaded {len(loadedPlugins)} plugins, {len(themes)} styles, {len(allFoundFunctions)} functions.')
+        print(f'[hushExtLoader] Loaded {len(loadedPlugins)} plugins, {len(themes)} styles, {len(allFoundFunctions)} functions, {len(registeredCommands)} custom commands.')
     
 def runPluginInit():
     try:
@@ -99,3 +104,15 @@ def themeRefresh():
         moduleTheme = getThemeFunctions[moduleName]()
         for theme in moduleTheme:
             themes[f'{moduleName}.{theme}'] = moduleTheme[theme]
+
+def commandBind():
+    global registeredCommands, registerCommandFunctions
+
+    registeredCommands = {}
+    for moduleName in registerCommandFunctions:
+        moduleCommand = registerCommandFunctions[moduleName]()
+        for command in moduleCommand:
+            if command[0] == '#':
+                registeredCommands[f'{command[1:]}'] = moduleCommand[command]
+            else:
+                registeredCommands[f'{moduleName}.{command}'] = moduleCommand[command]
