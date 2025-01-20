@@ -10,7 +10,8 @@ import time
 import hushExtLoader
 
 registry = {}
-startTime = int(time.time())
+startTime = time.time()
+startTimeFormated = time.ctime()
 themeSet = 'personalize.colored_bash'
 homePath = os.path.expanduser('~')
 
@@ -42,7 +43,7 @@ def completer(text, state):
             if cmd.lower().startswith(text.lower()):
                 matches.append(cmd)
 
-        custom_commands = ['_listvar', '_theme_list', '_theme_set', '_dump'
+        custom_commands = ['_listvar', '_theme_list', '_theme_set', '_dump',
                            'cd', 'exit', 'quit', 'export', '_checkfile']
         for custom_cmd in custom_commands:
             if custom_cmd.lower().startswith(text.lower()):
@@ -64,8 +65,8 @@ def completer(text, state):
 def writeHistory(string):
     global hushLog
     with open(f"{homePath}/.hush_history", 'a+') as f:
-        f.write(f'Session [{startTime}] at {time.ctime()}: {string}\n')
-        hushLog.append(f'Session [{startTime}] at {time.ctime()}: {string}\n')
+        f.write(f'Session [{int(startTime)}] at {time.ctime()}: {string}\n')
+        hushLog.append(f'Session [{int(startTime)}] at {time.ctime()}: {string}\n')
 
 if platform.system() == 'Windows':
     print('Auto-completion has been disabled because this system is Windows.')
@@ -101,7 +102,7 @@ def _isSerializable(obj):
         return False
 
 def main():
-    global themeSet
+    global themeSet, startTimeFormated
 
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
@@ -151,7 +152,7 @@ def main():
             print()
 
         elif shinput.startswith('_dump'):
-            nowTime = int(time.time())
+            nowTime = time.time()
             _globalsFiltered = {}
             
             for key, value in globals().items():
@@ -162,10 +163,12 @@ def main():
             _globalsFiltered['systemVersion'] = platform.release()
             _globalsFiltered['systemArch'] = platform.machine()
             _globalsFiltered['pythonVersion'] = platform.python_version()
+            _globalsFiltered['dumpTime'] = nowTime
+            _globalsFiltered['dumpTimeFormated'] = time.ctime()
             _globalsFiltered['hushExtLoaderLog'] = hushExtLoader.Dump()
             
-            print(f"Dumped to dump_{nowTime}_session{startTime}.json")
-            with open(f"dump_{nowTime}_session{startTime}.json", "w") as f:
+            print(f"Dumped to dump_{nowTime}.json")
+            with open(f"dump_{int(nowTime)}.json", "w") as f:
                 json.dump(_globalsFiltered, f, indent=4, ensure_ascii=False)
         
 
