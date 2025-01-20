@@ -1,0 +1,27 @@
+# Remove the .disabled to enable this extension.
+# This is an example extension.
+
+def onLoad():
+    _thisFunctionWillNotBeExecutedByExtensionLoader()
+
+def preHook():
+    print('Before the command.')
+
+def afterHook():
+    print("After the command")
+
+def getStyles():
+    return {
+        'testStyle_1': '> ',
+        'testStyle_2': '>> ', 
+    }
+
+def registerCommands():
+    return {'imthe_local': command,
+            '#imthe_global': command}
+
+def command(args):
+    print(f'Command args: {args}')
+
+def _thisFunctionWillNotBeExecutedByExtensionLoader():
+    print("Hello, World!")

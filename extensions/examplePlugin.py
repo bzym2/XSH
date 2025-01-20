@@ -1,4 +1,5 @@
-# Remove the .disabled flag to enable this extension.
+# Remove the .disabled to enable this extension.
+# This is an example extension.
 
 def onLoad():
     _thisFunctionWillNotBeExecutedByExtensionLoader()
