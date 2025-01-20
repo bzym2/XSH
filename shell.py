@@ -126,8 +126,8 @@ def main():
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
 
-    hushExtLoader.load()
-    hushExtLoader.run_plugin_init()
+    hushExtLoader.Load()
+    hushExtLoader.runPluginInit()
 
     try:
         write_history(f"A new session start by using {os.ttyname(0)}.")
@@ -135,8 +135,8 @@ def main():
         write_history("A new session start by using cmd.")
 
     while True:
-        hushExtLoader.run_plugin_pre_hook()
-        hushExtLoader.theme_refresh()
+        hushExtLoader.runPluginPreHook()
+        hushExtLoader.themeRefresh()
         theme = hushExtLoader.themes.get(theme_set, " $")
 
         try:
@@ -146,7 +146,7 @@ def main():
             print()
             exit_shell()
 
-        hushExtLoader.run_plugin_after_hook()
+        hushExtLoader.runPluginAfterHook()
         plugin_command = hushExtLoader.registeredCommands.get(args[0], None) if args else None
 
         if not shinput:
@@ -191,7 +191,7 @@ def main():
                 'pythonVersion': platform.python_version(),
                 'dumpTime': now_time,
                 'dumpTimeFormated': time.ctime(),
-                'hushExtLoaderLog': hushExtLoader.dump()
+                'hushExtLoaderLog': hushExtLoader.Dump()
             })
 
             filename = f"dump_{int(now_time)}.json"
