@@ -129,7 +129,10 @@ def main():
         args = shlex.split(shinput)
     
         hushExtLoader.runPluginAfterHook()
-        pluginCommand = hushExtLoader.registeredCommands.get(args[0], None)
+        try:
+            pluginCommand = hushExtLoader.registeredCommands.get(args[0], None)
+        except IndexError:
+            pluginCommand = None
     
 
         if not shinput:
