@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 import json
 import os
@@ -7,211 +7,228 @@ import subprocess
 import sys
 import shlex
 import time
+import readline
 import hushExtLoader
 
-registry = {}
-startTime = time.time()
-startTimeFormated = time.ctime()
-themeSet = 'personalize.colored_bash'
-homePath = os.path.expanduser('~')
+# Constants
+HISTORY_FILE = os.path.expanduser("~/.hush_history")
+DEFAULT_THEME = "personalize.colored_bash"
+WINDOWS_PLATFORM = "Windows"
 
-def changeDirectory(path: str):
-    global _lastChangedWorkDir
+# Global Variables
+registry = {}
+start_time = time.time()
+start_time_formatted = time.ctime()
+theme_set = DEFAULT_THEME
+home_path = os.path.expanduser("~")
+last_changed_work_dir = ''
+last_completer_list = []
+hush_log = []
+path_char = ':'
+if platform.system() == WINDOWS_PLATFORM:
+    path_char = ';'
+    print("Auto-completion has been disabled because this system is Windows.")
+else:
+    readline.set_completer(lambda text, state: completer(text, state))
+    readline.parse_and_bind("tab: complete")
+
+
+def change_directory(path: str):
+    """Changes the current working directory."""
+    global last_changed_work_dir
     try:
-        if path == '~':
-            os.chdir(homePath)
-            _lastChangedWorkDir = homePath
-        else:
-            os.chdir(path)
-            _lastChangedWorkDir = path
+        target_path = home_path if path == "~" else path
+        os.chdir(target_path)
+        last_changed_work_dir = target_path
     except FileNotFoundError:
         print(f"hush: cd: no such file or directory: {path}")
     except PermissionError:
         print(f"hush: cd: permission denied: {path}")
 
-def processVariable(command: str):
-    for i in registry:
-        command = command.replace(f"${i}", registry[i])
+
+def process_variable(command: str):
+    """Replaces variables in a command string with their values from the registry."""
+    for key, value in registry.items():
+        command = command.replace(f"${key}", value)
     return command
 
+
 def completer(text, state):
-    global _lastCompleterList
+    """Provides tab-completion suggestions."""
+    global last_completer_list
     commands = os.listdir()
+    matches = []
+
     if text:
-        matches = []
-        for cmd in commands: # local file
+        for cmd in commands:
             if cmd.lower().startswith(text.lower()):
                 matches.append(cmd)
 
-        customCommands = ['_listvar', '_theme_list', '_theme_set', '_dump',
+        custom_commands = ['_listvar', '_theme_list', '_theme_set', '_dump',
                            'cd', 'exit', 'quit', 'export', '_checkfile']
+        for custom_cmd in custom_commands:
+            if custom_cmd.lower().startswith(text.lower()):
+                matches.append(custom_cmd)
 
-        for customCmd in customCommands:
-            if customCmd.lower().startswith(text.lower()):
-                matches.append(customCmd)
-
-        for pluginCmd in hushExtLoader.registeredCommands:
-            if pluginCmd.lower().startswith(text.lower()):
-                matches.append(pluginCmd)
-
+        for plugin_cmd in hushExtLoader.registeredCommands:
+            if plugin_cmd.lower().startswith(text.lower()):
+                matches.append(plugin_cmd)
     else:
         matches = commands
 
-    _lastCompleterList = commands + customCommands
-
+    last_completer_list = commands + custom_commands
     try:
-        if matches:
-            return matches[state]
-        else:
-            return None
+        return matches[state] if matches else None
     except IndexError:
         return None
 
 
-def writeHistory(string):
-    global hushLog
-    with open(f"{homePath}/.hush_history", 'a+') as f:
-        f.write(f'Session [{int(startTime)}] at {time.ctime()}: {string}\n')
-        hushLog.append(f'Session [{int(startTime)}] at {time.ctime()}: {string}\n')
+def write_history(string):
+    """Appends a command to the history file and in-memory log."""
+    timestamp = int(start_time)
+    formatted_time = time.ctime()
+    history_entry = f"Session [{timestamp}] at {formatted_time}: {string}\n"
+    with open(HISTORY_FILE, "a+") as f:
+        f.write(history_entry)
+    hush_log.append(history_entry)
 
-if platform.system() == 'Windows':
-    print('Auto-completion has been disabled because this system is Windows.')
-    pathChar = ';'
-else:
-    import readline
-    pathChar = ':'
-    readline.set_completer(completer)
-    readline.parse_and_bind("tab: complete")
 
-_lastChangedWorkDir = ''
-_lastCompleterList = []
-hushLog = []
-
-def findExecutable(filename):
-    if platform.system() == 'Windows':
-        filename = filename + '.exe'
-    for i in registry['PATH'].split(pathChar) + [os.getcwd()]:
-        if os.path.exists(f'{i}/{filename}'):
-            return f'{i}/{filename}'
+def find_executable(filename):
+    """Finds the full path to an executable file."""
+    if platform.system() == WINDOWS_PLATFORM:
+        filename += ".exe"
+    search_paths = registry.get('PATH', '').split(path_char) + [os.getcwd()]
+    for path in search_paths:
+        full_path = os.path.join(path, filename)
+        if os.path.exists(full_path):
+            return full_path
     return False
 
 
-def exit():
-    writeHistory('Exiting...')
+def exit_shell():
+    """Exits the shell."""
+    write_history("Exiting...")
     sys.exit()
 
-def _isSerializable(obj):
+
+def is_serializable(obj):
+    """Checks if an object can be serialized to JSON."""
     try:
         json.dumps(obj)
         return True
     except TypeError:
         return False
 
-def main():
-    global themeSet, startTimeFormated
 
+def main():
+    """Main shell loop."""
+    global theme_set, start_time_formatted
     registry.update(os.environ)  # load system variable
     registry['SHELL'] = '/usr/bin/hush'
-    
-    hushExtLoader.Load()
-    hushExtLoader.runPluginInit()
+
+    hushExtLoader.load()
+    hushExtLoader.run_plugin_init()
 
     try:
-        writeHistory(f'A new session start by using {os.ttyname(0)}.')
+        write_history(f"A new session start by using {os.ttyname(0)}.")
     except AttributeError:
-        writeHistory('A new session start by using cmd.')
-    while True:
-        hushExtLoader.runPluginPreHook()
-        hushExtLoader.themeRefresh()
-        theme = hushExtLoader.themes.get(themeSet, ' $')
+        write_history("A new session start by using cmd.")
 
-        shinput = processVariable(input(theme))
-        args = shlex.split(shinput)
-    
-        hushExtLoader.runPluginAfterHook()
+    while True:
+        hushExtLoader.run_plugin_pre_hook()
+        hushExtLoader.theme_refresh()
+        theme = hushExtLoader.themes.get(theme_set, " $")
+
         try:
-            pluginCommand = hushExtLoader.registeredCommands.get(args[0], None)
-        except IndexError:
-            pluginCommand = None
-    
+            shinput = process_variable(input(theme))
+            args = shlex.split(shinput)
+        except EOFError:
+            print()
+            exit_shell()
+
+        hushExtLoader.run_plugin_after_hook()
+        plugin_command = hushExtLoader.registeredCommands.get(args[0], None) if args else None
 
         if not shinput:
-            pass
+            continue
 
-        elif not pluginCommand is None:
-            pluginCommand(args)
+        if plugin_command:
+            plugin_command(args)
+            continue
 
-        elif shinput == 'quit' or shinput == 'exit':
-            exit()
+        if shinput in ("quit", "exit"):
+            exit_shell()
 
-        elif shinput.startswith('cd'):
-            if shinput == 'cd':
-                changeDirectory('~')
-            else:
-                path = shinput.split(' ', 1)[-1]
-                changeDirectory(path)
+        if shinput.startswith("cd"):
+            target_path = shinput.split(" ", 1)[-1] if " " in shinput else "~"
+            change_directory(target_path)
+            continue
 
-        elif shinput == '_listvar':
-            for i in registry:
-                print(f"{i}: {registry[i]}")
+        if shinput == "_listvar":
+            for key, value in registry.items():
+                print(f"{key}: {value}")
+            continue
 
-        elif shinput.startswith('_theme_set'):
-            themeSet = shinput.split(' ')[-1]
+        if shinput.startswith("_theme_set"):
+            theme_set = shinput.split(" ")[-1]
+            continue
 
-        elif shinput.startswith('_theme_list'):
+        if shinput.startswith("_theme_list"):
             print("List of theme available:")
-            for i in hushExtLoader.themes:
-                print(f"\nTheme \"{i}\" preview:", end=f'\n{hushExtLoader.themes[i]}\n')
+            for theme_name, theme_preview in hushExtLoader.themes.items():
+                print(f'\nTheme "{theme_name}" preview:\n{theme_preview}\n')
+            continue
 
-            print()
+        if shinput.startswith("_dump"):
+            now_time = time.time()
+            globals_filtered = {
+                key: value for key, value in globals().items() if is_serializable(value)
+            }
+            globals_filtered.update({
+                'systemType': platform.system(),
+                'systemVersion': platform.release(),
+                'systemArch': platform.machine(),
+                'pythonVersion': platform.python_version(),
+                'dumpTime': now_time,
+                'dumpTimeFormated': time.ctime(),
+                'hushExtLoaderLog': hushExtLoader.dump()
+            })
 
-        elif shinput.startswith('_dump'):
-            nowTime = time.time()
-            _globalsFiltered = {}
-            
-            for key, value in globals().items():
-                if _isSerializable(value):
-                    _globalsFiltered[key] = value
+            filename = f"dump_{int(now_time)}.json"
+            print(f"Dumped to {filename}")
+            with open(filename, "w") as f:
+                json.dump(globals_filtered, f, indent=4, ensure_ascii=False)
+            continue
 
-            _globalsFiltered['systemType'] = platform.system()
-            _globalsFiltered['systemVersion'] = platform.release()
-            _globalsFiltered['systemArch'] = platform.machine()
-            _globalsFiltered['pythonVersion'] = platform.python_version()
-            _globalsFiltered['dumpTime'] = nowTime
-            _globalsFiltered['dumpTimeFormated'] = time.ctime()
-            _globalsFiltered['hushExtLoaderLog'] = hushExtLoader.Dump()
-            
-            print(f"Dumped to dump_{nowTime}.json")
-            with open(f"dump_{int(nowTime)}.json", "w") as f:
-                json.dump(_globalsFiltered, f, indent=4, ensure_ascii=False)
-        
+        if shinput.startswith("export "):
+            parts = shinput.split(" ")
+            if len(parts) >= 2 and "=" in parts[1]:
+                key, value = parts[1].split("=", 1)
+                registry[key] = value.strip()
+            continue
 
-        elif shinput.startswith('export '):
-            parts = shinput.split(' ')
+        if shinput.startswith("_checkfile "):
+            filename = shinput.split(" ")[1]
+            print(find_executable(filename))
+            continue
 
-            registry[parts[1].split('=')[0]] = parts[1].split('=')[1].strip()
-        elif shinput.startswith('_checkfile '):
-            print(findExecutable(shinput.split(' ')[1]))
+        parts = shlex.split(shinput)
+        executable_path = find_executable(parts[0])
+
+        if executable_path:
+            try:
+                process_return = subprocess.run(
+                    parts, env=registry, shell=False, capture_output=True, text=True)
+                write_history(
+                    f'Executed "{shinput}", return code: {process_return.returncode}.')
+                if process_return.stderr:
+                    print(f"Error: {process_return.stderr}")
+            except Exception as e:
+                print(f"hush: {e}")
+                write_history(f'Executed "{shinput}", but an error occurred: {e}.')
         else:
-            parts = shlex.split(shinput)
-            flag = findExecutable(parts[0])
-
-            if flag:
-                try:
-                    processReturn = subprocess.run(
-                        parts, env=registry, shell=False)
-                    writeHistory(
-                        f"Executed \"{shinput}\", return code: {processReturn.returncode}.")
-                except Exception as f:
-                    print(f"hush: {f}")
-                    writeHistory(
-                        f"Executed \"{shinput}\", return code: {processReturn.returncode}.")
-            else:
-                print(f"hush: {parts[0]}: not found")
-                writeHistory(
-                    f"Executed \"{shinput}\", but this command is not found.")
-
-            # subprocess.run(shinput, env=registery, shell=True)
+            print(f"hush: {parts[0]}: not found")
+            write_history(f'Executed "{shinput}", but this command is not found.')
 
 
 while True:
@@ -219,4 +236,4 @@ while True:
         main()
     except KeyboardInterrupt:
         print("\nGoodbye")
-        exit()
+        exit_shell()
