@@ -114,5 +114,6 @@ def commandBind():
         for command in moduleCommand:
             if command[0] == '#':
                 registeredCommands[f'{command[1:]}'] = moduleCommand[command]
+                registeredCommands[f'{moduleName}.{command}'] = moduleCommand[command]
             else:
                 registeredCommands[f'{moduleName}.{command}'] = moduleCommand[command]
