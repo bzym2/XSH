@@ -155,6 +155,7 @@ def main():
 
         try:
             shinput = processVariable(input(theme))
+            writeHistory(f'Executing "{shinput}".')
             args = shlex.split(shinput)
         except EOFError:
             print()
