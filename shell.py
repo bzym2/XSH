@@ -218,7 +218,7 @@ def main():
         if executable_path:
             try:
                 process_return = subprocess.run(
-                    parts, env=registry, shell=False, capture_output=True, text=True)
+                    parts, env=registry, shell=False)
                 write_history(
                     f'Executed "{shinput}", return code: {process_return.returncode}.')
                 if process_return.stderr:
