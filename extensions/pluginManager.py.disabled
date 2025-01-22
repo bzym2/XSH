@@ -1,0 +1,17 @@
+# testing
+# author: Stevesuk0 (steveubuntu@outlook.com)
+
+import os
+import json
+
+plugins = []
+
+def onLoad():
+    global plugins
+    os.makedirs('pluginManager', exist_ok=True)
+    for i in os.listdir():
+        if i.endswith('.py'):
+            plugins.append(i[:-3])
+    os.chdir('pluginManager')
+    with open('pluginList.json', 'w') as f:
+        json.dump(plugins, f, ensure_ascii=False, indent=4)

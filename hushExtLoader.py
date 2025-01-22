@@ -81,22 +81,31 @@ def Load():
         print(f'[hushExtLoader] Loaded {len(loadedPlugins)} plugins, {len(themes)} styles, {len(allFoundFunctions)} functions, {len(registeredCommands)} custom commands.')
     
 def runPluginInit():
-    try:
-        for function in onLoadFunctions: onLoadFunctions[function]()
-    except Exception as f:
-        print(f'[hushExtLoader] Error in running plugin {function}\'s init: {f}')
+    oldPath = os.getcwd()
+    os.chdir(pluginFolder)
+    for function in onLoadFunctions: 
+        try:
+            onLoadFunctions[function]()
+        except Exception as f:
+            print(f'[hushExtLoader] Error in running plugin {function}\'s init: {f}')
+    os.chdir(oldPath)
 
 def runPluginPreHook():
-    try:
-        for function in preHookFunctions: preHookFunctions[function]()
-    except Exception as f:
-        print(f'[hushExtLoader] Error in running plugin {function}\'s pre-hook function: {f}')
+    oldPath = os.getcwd()
+    os.chdir(pluginFolder)
+    for function in preHookFunctions:
+        try:
+            preHookFunctions[function]()
+        except Exception as f:
+            print(f'[hushExtLoader] Error in running plugin {function}\'s pre-hook function: {f}')
+    os.chdir(oldPath)
 
 def runPluginAfterHook():
-    try:
-        for function in afterHookFunctions: afterHookFunctions[function]()
-    except Exception as f:
-        print(f'[hushExtLoader] Error in running plugin {function}\'s after-hook function: {f}')
+    for function in afterHookFunctions: 
+        try:
+            afterHookFunctions[function]()
+        except Exception as f:
+            print(f'[hushExtLoader] Error in running plugin {function}\'s after-hook function: {f}')
 
 def themeRefresh():
     global themes, getThemeFunctions
