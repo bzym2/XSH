@@ -8,6 +8,7 @@ pluginFolder = "./extensions"
 ###################
 
 Loaded = False
+Quiet = False
 allFoundFunctions = []
 onLoadFunctions = {}
 preHookFunctions = {}
@@ -35,8 +36,9 @@ def Dump():
     return _globalsFiltered
 
 def print(string):
+    if not Quiet:
+        sys.stdout.write(f'{string}\n')
     Logs.append(string)
-    sys.stdout.write(f'{string}\n')
 
 def Load():
     global Loaded, allFoundFunctions, onLoadFunctions, preHookFunctions, afterHookFunctions, loadedPlugins
