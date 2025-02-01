@@ -272,5 +272,5 @@ def main():
 try:
     main()
 except KeyboardInterrupt:
-    print("\nGoodbye")
-    exit()
+    print("\n")
+    pass
